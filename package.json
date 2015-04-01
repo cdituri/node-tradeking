@@ -1,6 +1,6 @@
 {
   "name": "node-tradeking",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A flexible interface to the TradeKing RESTful API",
   "main": "src/tradeking.js",
   "scripts": {
