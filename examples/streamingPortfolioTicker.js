@@ -31,5 +31,8 @@ tk.once('ready', function() {
         response.on('error', function(error) { console.log(error) });
       });
       request.end();
+    })
+    .catch(function(error) {
+      console.log(error);
     });
 });
