@@ -74,6 +74,13 @@ Tradeking.prototype.getMarketClock = function (cb) {
   return this.get('/market/clock.json', cb);
 }
 
+/* todo: getMarketQuotes should do something with fids arg */
+Tradeking.prototype.getMarketQuotes = function (symbols, fidset, cb) {
+  var uri = '/market/ext/quotes.json?symbols=' + symbols.toString();
+  debug("getMarketQuotes() - uri: %s", uri);
+  return this.post(uri, '', 'text/plain', cb);
+}
+
 Tradeking.prototype.getMarketQuoteFids = function () {
   return fids;
 }
