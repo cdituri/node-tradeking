@@ -120,12 +120,11 @@ Tradeking.prototype.get = function (uri, cb) {
          );
 }
 
-Tradeking.prototype.post = function (uri, fixmlData, cb) {
-  return this._consumer.post(  
+Tradeking.prototype.post = function (uri, data, contentType, cb) {
+  return this._consumer.post(
            this._config.apiUrl + uri,
            this._config.accessToken,
            this._config.accessSecret,
-           fixmlData, 'text/xml', cb
+           data, contentType, cb
          );
 }
-
