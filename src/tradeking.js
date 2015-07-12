@@ -7,6 +7,8 @@ var EE = require('events').EventEmitter;
 
 var Promise = require('bluebird').Promise;
 
+var fids = require(path.join(__dirname, 'fids.js'));
+
 module.exports = Tradeking; 
 
 function Tradeking(config) {
@@ -70,6 +72,10 @@ util.inherits(Tradeking, EE);
 
 Tradeking.prototype.getMarketClock = function (cb) {
   return this.get('/market/clock.json', cb);
+}
+
+Tradeking.prototype.getMarketQuoteFids = function () {
+  return fids;
 }
 
 Tradeking.prototype.getMarketNewsSearch = function (searchOpts, cb) {
