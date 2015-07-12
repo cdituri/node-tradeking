@@ -54,7 +54,7 @@ function Tradeking(config) {
         self.emit('ready');
       })
       .catch(function(error) {
-        throw new Error("Fatal: could not synchronize local clock to Tradeking Market Clock");
+        throw error;
       });
 }
 util.inherits(Tradeking, EE);
