@@ -36,6 +36,8 @@ function Tradeking(config) {
   self.getMarketClockAsync()
       .get(0)
       .then(function(clockData) {
+
+        /* TODO: ditch this manual timestamp crap and use moment.js */
         var serverTimestamp = parseInt(JSON.parse(clockData).response.unixtime);
         var unixtimeNow = Math.floor( (new Date()).getTime() / 1000 );
         var offset = unixtimeNow - serverTimestamp;
@@ -43,7 +45,6 @@ function Tradeking(config) {
         self._consumer._getTimestamp = function() {
           var unixtime = Math.floor( (new Date()).getTime() / 1000 );
 
-          // TODO: ouput a JSON object instead one day
           debug("now: %s, serverTimestamp: %s, timeOffset: %s, curtime: %s, adjTime: %s", 
                 unixtimeNow, serverTimestamp, offset, unixtime, unixtime - offset);
 
