@@ -27,7 +27,7 @@ Chris Dituri - csdituri@gmail.com
 
 ### Examples
 See the [examples](https://github.com/cdituri/node-tradeking/tree/master/examples) directory for some ideas.
-You'll need to adjust [examples/config.js](https://github.com/cdituri/node-tradeking/blob/master/examples/config.js) with your relevant OAuth information:
+You'll need to adjust [examples/config.json](https://github.com/cdituri/node-tradeking/blob/master/examples/config.json) with your relevant OAuth information:
 
 ```bash
 node ./examples/accountSummary.js
