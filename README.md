@@ -4,6 +4,8 @@ node-tradeking
 ## About
 
 ### Build Status
+[![Build Status](https://travis-ci.org/cdituri/node-tradeking.svg?branch=master)](https://travis-ci.org/cdituri/node-tradeking)
+
 [![Build Status](https://app.codeship.com/projects/4d7025b0-d250-0134-d185-1ef44b0bbae3/status?branch=master)](https://app.codeship.com/projects/201760)
 
 ### Description
