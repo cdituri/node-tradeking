@@ -1,19 +1,76 @@
-# Alpha at best
-## Use at your own discretion
+node-tradeking
+==============
 
-TradeKing Node.js Module
-========================
+## About
 
-A flexible module for interfacing with the TradeKing RESTful API.
+### Build Status
+[![Build Status](https://app.codeship.com/projects/4d7025b0-d250-0134-d185-1ef44b0bbae3/status?branch=master)](https://app.codeship.com/projects/201760)
 
-`npm install tradeking`
+### Description
+A node module for interfacing with the TradeKing REST API.
 
-Documentation
-------------
-- Is a work-in-progress
-- See examples/ for some ideas; you'll need to adjust examples/config.js with your relevant OAuth information:
-  ```
-  node ./examples/accountSummary.js
-  node ./examples/streamingPortfolioTicker.js
-  ```
+### Disclaimer
+Alpha at best and in flux.
 
+## Contributing
+Pull requests and issues are encouraged!
+
+### Author
+Chris Dituri - csdituri@gmail.com
+
+## Getting Started
+
+### Installation
+`npm install --production --save node-tradeking`
+
+### Examples
+See the [examples](https://github.com/cdituri/node-tradeking/tree/master/examples) directory for some ideas.
+You'll need to adjust [examples/config.js](https://github.com/cdituri/node-tradeking/blob/master/examples/config.js) with your relevant OAuth information:
+
+```bash
+node ./examples/accountSummary.js
+node ./examples/streamingPortfolioTicker.js
+```
+
+#### Instantiate
+Instantiate a new Tradeking object.
+
+```javascript
+const config = require('./config')
+const Tradeking = require('tradeking');
+const tk = new Tradeking(config);
+```
+
+#### Account Summary
+
+```javascript
+tk.accountSummary((error, data) => console.log(data));
+```
+
+#### Account Balances
+
+```javascript
+tk.accountBalances((error, data) => console.log(data));
+```
+
+#### Streaming Quotes
+
+```javascript
+const msecs = 10 * 1000;
+const symbols = ['msft', 'twtr', 'jcp', 'kors', 'uvxy'];
+
+const stream =
+  tk.streamQuote(symbols,
+      (error, data) => {
+          if (error) {
+              console.error(error);
+          } else {
+              const obj = JSON.parse(data);
+              console.log(JSON.stringify(obj, null, 4));
+          }
+      }
+  );
+
+// stream for `msecs` milliseconds
+setTimeout(c => c.abort(), msecs, stream);
+```

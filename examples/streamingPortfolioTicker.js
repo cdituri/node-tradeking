@@ -1,38 +1,31 @@
-var oauth = require('oauth');
-var debug = require('debug')('app');
-var config = require('./config');
-var Tradeking = require('../src/tradeking');
-var tk = new Tradeking(config);
+'use strict';
+const _ = require('lodash');
+const config = require('./config');
+const Tradeking = require('../index');
+const tk = new Tradeking(config);
 
-var consumer = new oauth.OAuth(null, null, config.consumerKey, config.consumerSecret, "1.0", null, "HMAC-SHA1");
+tk.accountSummary(
+    (error, data) => {
+        if (error) throw Error(error);
 
-tk.once('ready', function() {
-  tk.getAccountsAsync()
-    .get(0)
-   .then(function(data) {
-      var response = JSON.parse(data).response;
-      return response.accounts.accountsummary.accountholdings.holding
-    })
-    .map(function(holding) {
-      return holding.instrument.sym
-    })
-    .then(function(symbols) {
-      var request = consumer.get(
-        "https://stream.tradeking.com/v1/market/quotes.json?symbols=" + symbols.toString(),
-        config.accessToken,
-        config.accessSecret
-      );
+        const response = JSON.parse(data).response;
+        const holdings = response.accounts.accountsummary.accountholdings.holding;
+        const symbols = _.map(holdings, holding => holding.instrument.sym);
 
-      debug("Watching the following symbols: %s", symbols.toString());
+        console.log(`watching ${_.trimEnd(symbols.join(','), ',')}`);
 
-      request.on('response', function(response) {
-        response.setEncoding('utf8');
-        response.on('data', function(data) { console.log(data) });
-        response.on('error', function(error) { console.log(error) });
-      });
-      request.end();
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
-});
+        const stream =
+            tk.streamQuote(symbols,
+                (error, data) => {
+                    if (error) {
+                        console.error(error);
+                    } else {
+                        const obj = JSON.parse(data);
+                        console.log(JSON.stringify(obj, null, 4));
+                    }
+                }
+            );
+
+        setTimeout(c => c.abort(), (30 * 1000), stream);
+    }
+);

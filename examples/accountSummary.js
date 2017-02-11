@@ -1,18 +1,13 @@
-var config = require('./config');
-var Tradeking = require('../src/tradeking');
-var tk = new Tradeking(config);
+const config = require('./config');
+const Tradeking = require('../index');
+const tk = new Tradeking(config);
 
-tk.once('ready', function() {
-  tk.getAccountsAsync()
-    .get(0)
-    .then(function(data) {
-      var response = JSON.parse(data).response;
-      return response.accounts.accountsummary;
-    })
-    .then(function(summary) {
-      console.log(JSON.stringify(summary, null, 4));
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
-});
+tk.accountSummary(
+    (error, data, response) => {
+        if (error) {
+            console.error(error);
+        } else {
+            console.log(JSON.stringify(JSON.parse(data), null, 4));
+        }
+    }
+);
