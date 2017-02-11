@@ -1,0 +1,5 @@
+- type: serial
+  steps:
+    - name: test
+      service: node-tradeking
+      command: npm test

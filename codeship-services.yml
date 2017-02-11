@@ -1,0 +1,4 @@
+node-tradeking:
+    build:
+        image: node-tradeking
+        dockerfile: Dockerfile
