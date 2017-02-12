@@ -2,13 +2,12 @@
 
 const _ = require('lodash');
 const qs = require('querystring');
-const Joi = require('joi');
-const url = require('url');
-const util = require('util');
 const oauth = require('oauth');
 const moment = require('moment');
 const urljoin = require('url-join');
 const constants = require('./lib/constants');
+
+const debug_http = require('debug')('tradeking:http');
 
 class Tradeking {
 
@@ -27,107 +26,109 @@ class Tradeking {
           config.customHeaders      || null
         );
 
-        this.marketClock(
-            (err, data, response) => {
-                this.clock = JSON.parse(data).response;
-                const servertime = this.clock.unixtime;
+        this.marketClock()
+            .then(clock => {
+                const servertime = clock.unixtime;
                 const localtime = moment().unix();
                 this.clockSkew = localtime - servertime;
-            }
-        );
+                this.clock = clock;
+            });
     }
 
-    marketClock(callback) {
-        return this.request(constants.ENDPOINTS.MARKET_CLOCK, callback);
+    marketClock() {
+        const uri = constants.ENDPOINTS.MARKET_CLOCK;
+        return this.request('get', uri);
     }
 
-    accountSummary(callback) {
-        return this.request(constants.ENDPOINTS.ACCOUNT_SUMMARY, callback);
+    accountSummary() {
+        const uri = constants.ENDPOINTS.ACCOUNT_SUMMARIES;
+        return this.request('get', uri);
     }
 
-    accountBalances(callback) {
-        return this.request(constants.ENDPOINTS.ACCOUNT_BALANCE, callback);
+    accountBalances() {
+        const uri = constants.ENDPOINTS.ACCOUNT_BALANCES;
+        return this.request('get', uri);
     }
 
-    streamQuote(symbols, callback) {
+    async streamQuote(symbols, callback) {
         if(!_.isArray(symbols)) {
-            throw TypeError("symbols is not an array");
+            throw new TypeError("symbols is not an array");
         }
 
-        var request = this.request(constants.ENDPOINTS.STREAM_QUOTE, symbols);
-
-        request
-            .on('response', response => {
-                response
-                    .setEncoding('utf8')
-                    .on('data', data => {
-                        callback(null, data);
-                    })
-                    .on('error', error => {
-                        callback(error);
-                    });
-            })
-            .on('error', error => {
-                callback(error);
-            })
-            .end();
-
-        return request;
+        const uri = constants.ENDPOINTS.STREAM_QUOTE;
+        return await
+            this.request('stream', constants.ENDPOINTS.STREAM_QUOTE, symbols)
+                .then(stream => {
+                    stream
+                        .on('response', response => {
+                            response
+                                .setEncoding('utf8')
+                                .on('data', data => {
+                                    callback(null, JSON.parse(data));
+                                })
+                                .on('error', error => {
+                                    callback(new Error(error));
+                                });
+                        })
+                        .on('error', error => {
+                            callback(new Error(error));
+                        })
+                        .end();
+                });
     }
-
 
     // --- low-level requests ------------------------------------------
 
-    request(endpoint, payload, callback) {
-        if(!_.isArray(endpoint)) {
-            throw TypeError("endpoint is not an array");
-        } else if(_.isFunction(payload)) {
-            callback = payload;
-            payload = {};
-        }
+    request(method, uri, content_type, payload) {
 
-        var request;
-        const [method, uri] = endpoint;
+        return new Promise((resolve, reject) => {
 
-        switch (method.toLowerCase()) {
-            case 'get':
-                request =
+            const handler = (error, data, response) => {
+                debug_http(response);
+                if (error) {
+                    reject(error);
+                } else if (data) {
+                    resolve(JSON.parse(data).response);
+                } else {
+                    reject(new Error("fatal: unknown error"));
+                }
+            };
+
+            switch (method.toLowerCase()) {
+                case 'get':
                     this.oauth.get(
                         urljoin(constants.API_URL, uri),
                         this.config.accessToken,
                         this.config.accessSecret,
-                        callback
+                        handler
                     );
-                break;
+                    break;
 
-            case 'post':
-                throw Error("not implemented");
-                // request =
-                //     this.oauth.post(
-                //         urljoin(constants.API_URL, uri),
-                //         this.config.accessToken,
-                //         this.config.accessSecret,
-                //         payload,'text/plain', callback
-                //     );
-                break;
+                case 'post':
+                    this.oauth.post(
+                        urljoin(constants.API_URL, uri),
+                        this.config.accessToken,
+                        this.config.accessSecret,
+                        payload,'text/plain', handler
+                    );
+                    break;
 
-            case 'stream':
-                const _url = urljoin(constants.STREAM_URL, uri);
-                const _qs = qs.stringify({symbols: payload.toString()});
-                request =
-                    this.oauth.get(
-                        url.parse(_url + '?' + _qs).href,
+                case 'stream':
+                    const _qs = qs.stringify({ symbols: symbols.join(',') });
+                    resolve(this.oauth.get(
+                        urljoin(constants.STREAM_URL, uri + '?' + _qs),
                         this.config.accessToken,
                         this.config.accessSecret
-                    );
-                break;
+                    ));
+                    break;
 
-            default:
-                throw TypeError("unknown request method");
-        }
-
-        return request;
+                default:
+                    reject(new TypeError("unknown request method"));
+                    break;
+            }
+        });
     }
+
 }
 
 module.exports = Tradeking;

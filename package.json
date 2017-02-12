@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/cdituri/node-tradeking#readme",
   "dependencies": {
-    "joi": "^10.2.2",
+    "debug": "^2.6.1",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "oauth": "^0.9.15",
